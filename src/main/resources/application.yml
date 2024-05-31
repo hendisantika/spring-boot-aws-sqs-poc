@@ -1,18 +1,24 @@
 spring:
   application.name: spring-boot-aws-sqs-poc
-  autoconfigure:
-    exclude:
-      - org.springframework.cloud.aws.autoconfigure.context.ContextInstanceDataAutoConfiguration
-      - org.springframework.cloud.aws.autoconfigure.context.ContextStackAutoConfiguration
-      - org.springframework.cloud.aws.autoconfigure.context.ContextRegionProviderAutoConfiguration
+#  autoconfigure:
+#    exclude:
+#      - org.springframework.cloud.aws.autoconfigure.context.ContextInstanceDataAutoConfiguration
+#      - org.springframework.cloud.aws.autoconfigure.context.ContextStackAutoConfiguration
+#      - org.springframework.cloud.aws.autoconfigure.context.ContextRegionProviderAutoConfiguration
 
 cloud:
   aws:
     region:
-      static: us-east-1
+      static: ap-southeast-1
       auto: false
     credentials:
-      access-key: XXXX
-      secret-key: XXXX
+      access-key: YOUR_AWS_ACCESS_KEY
+      secret-key: YOUR_AWS_SECRET_KEY
     end-point:
-      uri: https://sqs.us-east-1.amazonaws.com/549485575026/spring-boot-poc
+      uri: https://sqs.ap-southeast-2.amazonaws.com/267023985200/spring-boot-sqs-poc
+
+events:
+  queues:
+    user-created-by-name-queue: user_created_by_name_queue
+    user-created-record-queue: user_created_record_queue
+    user-created-event-type-queue: user_created_event_type_queue
