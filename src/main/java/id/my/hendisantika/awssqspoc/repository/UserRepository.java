@@ -28,4 +28,10 @@ public class UserRepository {
     public Optional<User> findById(String userId) {
         return Optional.ofNullable(persistedUsers.get(userId));
     }
+
+    public Optional<User> findByName(String name) {
+        return persistedUsers.values().stream()
+                .filter(user -> user.name().equals(name))
+                .findFirst();
+    }
 }
