@@ -20,4 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserRepository {
     private final Map<String, User> persistedUsers = new ConcurrentHashMap<>();
 
+    public void save(User userToSave) {
+        persistedUsers.put(userToSave.id(), userToSave);
+    }
 }
