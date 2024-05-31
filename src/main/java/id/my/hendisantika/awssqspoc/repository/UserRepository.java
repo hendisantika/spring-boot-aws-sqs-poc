@@ -4,6 +4,7 @@ import id.my.hendisantika.awssqspoc.model.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -22,5 +23,9 @@ public class UserRepository {
 
     public void save(User userToSave) {
         persistedUsers.put(userToSave.id(), userToSave);
+    }
+
+    public Optional<User> findById(String userId) {
+        return Optional.ofNullable(persistedUsers.get(userId));
     }
 }
