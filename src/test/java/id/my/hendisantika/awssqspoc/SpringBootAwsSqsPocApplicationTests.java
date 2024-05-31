@@ -1,6 +1,7 @@
 package id.my.hendisantika.awssqspoc;
 
 import id.my.hendisantika.awssqspoc.config.EventQueuesProperties;
+import id.my.hendisantika.awssqspoc.model.UserCreatedEvent;
 import id.my.hendisantika.awssqspoc.repository.UserRepository;
 import io.awspring.cloud.sqs.operations.SqsTemplate;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Duration;
+import java.util.UUID;
 
 import static org.awaitility.Awaitility.await;
 
@@ -30,7 +32,7 @@ class SpringBootAwsSqsPocApplicationTests extends BaseSqsLiveTest {
     @Test
     void givenAStringPayload_whenSend_shouldReceive() {
         // given
-        var userName = "Albert";
+        var userName = "Itadori Yuji";
 
         // when
         sqsTemplate.send(to -> to.queue(eventQueuesProperties.getUserCreatedByNameQueue())
@@ -42,5 +44,24 @@ class SpringBootAwsSqsPocApplicationTests extends BaseSqsLiveTest {
                 .until(() -> userRepository.findByName(userName)
                         .isPresent());
     }
+
+    @Test
+    void givenARecordPayload_whenSend_shouldReceive() {
+        // given
+        String userId = UUID.randomUUID()
+                .toString();
+        var payload = new UserCreatedEvent(userId, "Itadori Yuji", "yuji@yopmail.com");
+
+        // when
+        sqsTemplate.send(to -> to.queue(eventQueuesProperties.getUserCreatedRecordQueue())
+                .payload(payload));
+
+        // then
+        log.info("Message sent with payload: {}", payload);
+        await().atMost(Duration.ofSeconds(3))
+                .until(() -> userRepository.findById(userId)
+                        .isPresent());
+    }
+
 
 }
