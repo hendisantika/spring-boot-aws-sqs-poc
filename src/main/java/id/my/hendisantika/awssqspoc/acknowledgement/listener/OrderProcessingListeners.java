@@ -1,5 +1,6 @@
 package id.my.hendisantika.awssqspoc.acknowledgement.listener;
 
+import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,5 +25,15 @@ public class OrderProcessingListeners {
     private final InventoryService inventoryService;
 
     private final OrderService orderService;
+
+    @SqsListener(value = "${events.queues.order-processing-retry-queue}", id = "retry-order-processing-container", messageVisibilitySeconds = "1")
+    public void stockCheckRetry(OrderCreatedEvent orderCreatedEvent) {
+        logger.info("Message received: {}", orderCreatedEvent);
+
+        orderService.updateOrderStatus(orderCreatedEvent.id(), OrderStatus.PROCESSING);
+        inventoryService.checkInventory(orderCreatedEvent.productId(), orderCreatedEvent.quantity());
+        orderService.updateOrderStatus(orderCreatedEvent.id(), OrderStatus.PROCESSED);
+        logger.info("Message processed successfully: {}", orderCreatedEvent);
+    }
 
 }
