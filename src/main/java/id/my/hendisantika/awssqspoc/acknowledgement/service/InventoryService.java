@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,4 +28,10 @@ public class InventoryService implements InitializingBean {
     // Using a Map to simulate storage
     private Map<UUID, Integer> inventory;
 
+    @Override
+    public void afterPropertiesSet() {
+        this.inventory = new ConcurrentHashMap<>(Map.of(productIdProperties.getSmartphone(), 10,
+                productIdProperties.getWirelessHeadphones(), 15,
+                productIdProperties.getLaptop(), 5));
+    }
 }
