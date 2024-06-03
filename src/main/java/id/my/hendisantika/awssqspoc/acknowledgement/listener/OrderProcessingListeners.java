@@ -52,4 +52,14 @@ public class OrderProcessingListeners {
 
         logger.info("Releasing processing thread.");
     }
+
+    @SqsListener(value = "${events.queues.order-processing-no-retries-queue}", acknowledgementMode = "${events.acknowledgment.order-processing-no-retries-queue}", id = "no-retries-order-processing-container", messageVisibilitySeconds = "3")
+    public void stockCheckNoRetries(OrderCreatedEvent orderCreatedEvent) {
+        logger.info("Message received: {}", orderCreatedEvent);
+
+        // Fire and forget scenario where we're not  interested on the outcome, e.g. a sales event with limited inventory.
+        orderService.updateOrderStatus(orderCreatedEvent.id(), OrderStatus.RECEIVED);
+        inventoryService.checkInventory(orderCreatedEvent.productId(), orderCreatedEvent.quantity());
+        logger.info("Message processed: {}", orderCreatedEvent);
+    }
 }
