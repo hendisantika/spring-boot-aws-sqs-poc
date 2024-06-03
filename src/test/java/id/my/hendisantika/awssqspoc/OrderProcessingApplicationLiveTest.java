@@ -72,4 +72,16 @@ class OrderProcessingApplicationLiveTest extends BaseSqsLiveTest {
                         .equals(OrderStatus.PROCESSED));
         assertQueueIsEmpty(queueName, "async-order-processing-container");
     }
+
+    @Test
+    public void givenAlwaysAcknowledgementMode_whenProcessThrows_shouldAcknowledge() {
+        var orderId = UUID.randomUUID();
+        var queueName = eventsQueuesProperties.getOrderProcessingNoRetriesQueue();
+        sqsTemplate.send(queueName, new OrderCreatedEvent(orderId, productIdProperties.getWirelessHeadphones(), 20));
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(1))
+                .until(() -> orderService.getOrderStatus(orderId)
+                        .equals(OrderStatus.RECEIVED));
+        assertQueueIsEmpty(queueName, "no-retries-order-processing-container");
+    }
 }
