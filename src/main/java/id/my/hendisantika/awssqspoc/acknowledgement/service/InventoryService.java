@@ -51,4 +51,9 @@ public class InventoryService implements InitializingBean {
         // Decrease inventory
         inventory.put(productId, stock - quantity);
     }
+
+    public void slowCheckInventory(UUID productId, int quantity) {
+        simulateBusyConnection();
+        checkInventory(productId, quantity);
+    }
 }
