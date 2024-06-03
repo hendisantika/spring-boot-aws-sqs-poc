@@ -35,4 +35,10 @@ public class UserEventListeners {
         userRepository.save(new User(UUID.randomUUID()
                 .toString(), username, null));
     }
+
+    @SqsListener(value = "${events.queues.user-created-record-queue}")
+    public void receiveRecordMessage(UserCreatedEvent event) {
+        log.info("Received message: {}", event);
+        userRepository.save(new User(event.id(), event.username(), event.email()));
+    }
 }
