@@ -21,4 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OrderService {
 
     Map<UUID, OrderStatus> ORDER_STATUS_STORAGE = new ConcurrentHashMap<>();
+
+    public void updateOrderStatus(UUID orderId, OrderStatus status) {
+        ORDER_STATUS_STORAGE.put(orderId, status);
+    }
 }
