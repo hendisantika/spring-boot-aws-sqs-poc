@@ -56,4 +56,13 @@ public class InventoryService implements InitializingBean {
         simulateBusyConnection();
         checkInventory(productId, quantity);
     }
+
+    private void simulateBusyConnection() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
+    }
 }
