@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
+import static id.my.hendisantika.awssqspoc.introduction.UserEventListeners.EVENT_TYPE_CUSTOM_HEADER;
 import static org.awaitility.Awaitility.await;
 
 @Slf4j
