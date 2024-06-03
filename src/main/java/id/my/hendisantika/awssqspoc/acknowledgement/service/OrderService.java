@@ -25,4 +25,8 @@ public class OrderService {
     public void updateOrderStatus(UUID orderId, OrderStatus status) {
         ORDER_STATUS_STORAGE.put(orderId, status);
     }
+
+    public OrderStatus getOrderStatus(UUID orderId) {
+        return ORDER_STATUS_STORAGE.getOrDefault(orderId, OrderStatus.UNKNOWN);
+    }
 }
