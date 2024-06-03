@@ -1,5 +1,6 @@
 package id.my.hendisantika.awssqspoc.introduction;
 
+import id.my.hendisantika.awssqspoc.model.User;
 import id.my.hendisantika.awssqspoc.repository.UserRepository;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.extern.slf4j.Slf4j;
