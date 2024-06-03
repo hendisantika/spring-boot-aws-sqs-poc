@@ -2,14 +2,21 @@ package id.my.hendisantika.awssqspoc;
 
 import id.my.hendisantika.awssqspoc.acknowledgement.EventsQueuesProperties;
 import id.my.hendisantika.awssqspoc.acknowledgement.config.ProductIdProperties;
+import id.my.hendisantika.awssqspoc.acknowledgement.model.OrderCreatedEvent;
+import id.my.hendisantika.awssqspoc.acknowledgement.model.OrderStatus;
 import id.my.hendisantika.awssqspoc.acknowledgement.service.OrderService;
 import io.awspring.cloud.sqs.listener.MessageListenerContainerRegistry;
 import io.awspring.cloud.sqs.operations.SqsTemplate;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
+
+import java.time.Duration;
+import java.util.UUID;
 
 /**
  * Created by IntelliJ IDEA.
@@ -41,4 +48,16 @@ class OrderProcessingApplicationLiveTest extends BaseSqsLiveTest {
 
     @Autowired
     private MessageListenerContainerRegistry registry;
+
+    @Test
+    public void givenOnSuccessAcknowledgementMode_whenProcessingThrows_shouldRetry() {
+        var orderId = UUID.randomUUID();
+        var queueName = eventsQueuesProperties.getOrderProcessingRetryQueue();
+        sqsTemplate.send(queueName, new OrderCreatedEvent(orderId, productIdProperties.getLaptop(), 10));
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(1))
+                .until(() -> orderService.getOrderStatus(orderId)
+                        .equals(OrderStatus.PROCESSED));
+        assertQueueIsEmpty(queueName, "retry-order-processing-container");
+    }
 }
