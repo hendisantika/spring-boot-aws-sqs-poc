@@ -1,10 +1,14 @@
 package id.my.hendisantika.awssqspoc.acknowledgement.listener;
 
 import io.awspring.cloud.sqs.annotation.SqsListener;
+import io.awspring.cloud.sqs.annotation.SqsListenerAcknowledgementMode;
+import io.awspring.cloud.sqs.listener.acknowledgement.Acknowledgement;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by IntelliJ IDEA.
@@ -36,4 +40,16 @@ public class OrderProcessingListeners {
         logger.info("Message processed successfully: {}", orderCreatedEvent);
     }
 
+    @SqsListener(value = "${events.queues.order-processing-async-queue}", acknowledgementMode = SqsListenerAcknowledgementMode.MANUAL, id = "async-order-processing-container", messageVisibilitySeconds = "3")
+    public void slowStockCheckAsynchronous(OrderCreatedEvent orderCreatedEvent, Acknowledgement acknowledgement) {
+        logger.info("Message received: {}", orderCreatedEvent);
+
+        orderService.updateOrderStatus(orderCreatedEvent.id(), OrderStatus.PROCESSING);
+        CompletableFuture.runAsync(() -> inventoryService.slowCheckInventory(orderCreatedEvent.productId(), orderCreatedEvent.quantity()))
+                .thenRun(() -> orderService.updateOrderStatus(orderCreatedEvent.id(), OrderStatus.PROCESSED))
+                .thenCompose(voidFuture -> acknowledgement.acknowledgeAsync())
+                .thenRun(() -> logger.info("Message for order {} acknowledged", orderCreatedEvent.id()));
+
+        logger.info("Releasing processing thread.");
+    }
 }
