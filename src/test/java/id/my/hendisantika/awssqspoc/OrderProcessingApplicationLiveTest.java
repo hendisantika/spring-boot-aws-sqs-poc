@@ -16,7 +16,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by IntelliJ IDEA.
@@ -83,5 +86,20 @@ class OrderProcessingApplicationLiveTest extends BaseSqsLiveTest {
                 .until(() -> orderService.getOrderStatus(orderId)
                         .equals(OrderStatus.RECEIVED));
         assertQueueIsEmpty(queueName, "no-retries-order-processing-container");
+    }
+
+    private void assertQueueIsEmpty(String queueName, String containerId) {
+        // Stop the listener so it doesn't pick the message again if it's still there
+        logger.info("Stopping container {}", containerId);
+        var container = Objects
+                .requireNonNull(registry.getContainerById(containerId), () -> "could not find container " + containerId);
+        container.stop();
+        // Look for messages in the queue
+        logger.info("Checking for messages in queue {}", queueName);
+        var message = sqsTemplate.receive(from -> from.queue(queueName)
+                // Polltimeout here must be set to a higher value than the message visibility set in the annotation
+                .pollTimeout(Duration.ofSeconds(5)));
+        assertThat(message).isEmpty();
+        logger.info("No messages found in queue {}", queueName);
     }
 }
