@@ -1,8 +1,11 @@
 package id.my.hendisantika.awssqspoc.introduction;
 
 import id.my.hendisantika.awssqspoc.repository.UserRepository;
+import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 /**
  * Created by IntelliJ IDEA.
@@ -24,5 +27,12 @@ public class UserEventListeners {
 
     public UserEventListeners(UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    @SqsListener("${events.queues.user-created-by-name-queue}")
+    public void receiveStringMessage(String username) {
+        log.info("Received message: {}", username);
+        userRepository.save(new User(UUID.randomUUID()
+                .toString(), username, null));
     }
 }
