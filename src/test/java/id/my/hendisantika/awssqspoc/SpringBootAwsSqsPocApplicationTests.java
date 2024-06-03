@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.awaitility.Awaitility.await;
@@ -50,7 +51,7 @@ class SpringBootAwsSqsPocApplicationTests extends BaseSqsLiveTest {
         // given
         String userId = UUID.randomUUID()
                 .toString();
-        var payload = new UserCreatedEvent(userId, "Itadori Yuji", "yuji@yopmail.com");
+        var payload = new UserCreatedEvent(userId, "yuji", "yuji@yopmail.com");
 
         // when
         sqsTemplate.send(to -> to.queue(eventQueuesProperties.getUserCreatedRecordQueue())
@@ -63,5 +64,23 @@ class SpringBootAwsSqsPocApplicationTests extends BaseSqsLiveTest {
                         .isPresent());
     }
 
+    @Test
+    void givenCustomHeaders_whenSend_shouldReceive() {
+        // given
+        String userId = UUID.randomUUID()
+                .toString();
+        var payload = new UserCreatedEvent(userId, "Yuji", "yuji@yopmail.com");
+        var headers = Map.<String, Object>of(EVENT_TYPE_CUSTOM_HEADER, "UserCreatedEvent");
 
+        // when
+        sqsTemplate.send(to -> to.queue(eventQueuesProperties.getUserCreatedEventTypeQueue())
+                .payload(payload)
+                .headers(headers));
+
+        // then
+        log.info("Sent message with payload {} and custom headers: {}", payload, headers);
+        await().atMost(Duration.ofSeconds(3))
+                .until(() -> userRepository.findById(userId)
+                        .isPresent());
+    }
 }
